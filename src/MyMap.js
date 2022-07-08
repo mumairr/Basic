@@ -15,6 +15,10 @@ import { OSM, XYZ } from 'ol/source';
 import { defaults as defaultControls, } from 'ol/control';
 import LayerGroup from 'ol/layer/Group';
 
+/* Ol-ext */
+
+import LayerSwitcherImage from "ol-ext/control/LayerSwitcherImage";
+
 let layers = [];
 let basemaps;
 let initialMap;
@@ -23,6 +27,35 @@ let center = [14848876, -2990883];
 let rotation = 0;
 
 var mapboxKey = "pk.eyJ1IjoiZGh5ZmIiLCJhIjoiY2o4M3F6MzJpMDBoejMybXBhZGF4aXJjOCJ9.rqAE8kSRfPbAdypH3Ydx-g";
+
+let osm = new TileLayer({
+    baseLayer: true,
+    title: "OSM",
+    visible: false,
+    source: new OSM()
+});
+
+let mapbox = new TileLayer({
+    baseLayer: true,
+    title: "Mapbox",
+    visible: true,
+    source: new XYZ({
+        tileSize: [512, 512],
+        url: 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/tiles/{z}/{x}/{y}?access_token=' + mapboxKey
+    })
+});
+
+let bing = new TileLayer({
+    title: "Aerial",
+    baseLayer: true,
+    visible: false,
+    preview: "data:image/jpeg;base64,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",
+    preload: Infinity,
+    source: new BingMaps({
+        key: 'Ai9y3x8v0FM1vGDUXevZDinOzkJVacIW8kJOtSwUDNn8WGpE0ZjxZPJttvIYZg5L',
+        imagerySet: "AerialWithLabels"
+    }),
+});
 
 function MapWrapper(props) {
     const [map, setMap] = useState()
@@ -37,35 +70,12 @@ function MapWrapper(props) {
             title: 'Basemaps',
             openInLayerSwitcher: false,
             layers: [
-                new TileLayer({
-                    baseLayer: true,
-                    title: "OSM",
-                    visible: false,
-                    source: new OSM()
-                }),
-                new TileLayer({
-                    baseLayer: true,
-                    title: "Mapbox",
-                    visible: true,
-                    source: new XYZ({
-                        tileSize: [512, 512],
-                        url: 'https://api.mapbox.com/styles/v1/mapbox/streets-v8/tiles/{z}/{x}/{y}?access_token=' + mapboxKey
-                    })
-                }),
-                new TileLayer({
-                    title: "Bing",
-                    baseLayer: true,
-                    visible: false,
-                    preload: Infinity,
-                    source: new BingMaps({
-                        key: 'Ai9y3x8v0FM1vGDUXevZDinOzkJVacIW8kJOtSwUDNn8WGpE0ZjxZPJttvIYZg5L',
-                        imagerySet: "AerialWithLabels"
-                    }),
-                })
             ]
         });
         layers = [
-            basemaps,
+            osm,
+            mapbox,
+            bing
         ];
 
         if (window.location.hash !== '') {
@@ -102,6 +112,8 @@ function MapWrapper(props) {
                 this.getTargetElement().style.cursor = '';
             }
         });
+
+        initialMap.addControl(new LayerSwitcherImage());
 
         let shouldUpdate = true;
         const view = initialMap.getView();
